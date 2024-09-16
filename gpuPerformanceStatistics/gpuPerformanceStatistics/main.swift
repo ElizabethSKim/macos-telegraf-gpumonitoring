@@ -22,19 +22,14 @@ func queryPerformanceStatistic(matchingString: String) {
     var acceleratorService: io_object_t = IOIteratorNext(iterator)
     while acceleratorService != 0 {
         let performanceStats = IORegistryEntryCreateCFProperty(acceleratorService, "PerformanceStatistics" as CFString, kCFAllocatorDefault, 0)
-        var first = true
         
         if let stats = performanceStats?.takeRetainedValue() as? [String: Any] {
-            // Do something with the performance statistics
-            print(stats)
-            print ("{")
-         
-            for (key, value) in stats {
-                if (!(first == true)) { print (",") }
-                else { first = false }
-                print ("\""+key+"\""," : ", value, terminator: "")
+            if let jsonData = try? JSONSerialization.data(withJSONObject: stats, options: [.prettyPrinted]),
+               let jsonString = String(data: jsonData, encoding: .utf8) {
+                print(jsonString)
+            } else {
+                print("Error: Failed to serialize JSON")
             }
-            print ("}")
         }
         
         IOObjectRelease(acceleratorService)
